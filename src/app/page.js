@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import ChatHeader from "@/components/Chat/ChatHeader";
 import ChatMessages from "@/components/Chat/ChatMessages";
 import ChatInput from "@/components/Chat/ChatInput";
 import ProjectsGrid from "@/components/Projects/ProjectsGrid";
-import SettingsModal from "@/components/Settings/SettingsModal";
 import { demoProjects } from "@/data/demoData";
 import { sendMessage, checkHealth } from "@/services/chatApi";
 import { useTheme } from "@/context/ThemeContext";
@@ -15,24 +14,28 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 export default function Home() {
   const { darkMode } = useTheme();
 
-  const [projectMessages, setProjectMessages, messagesLoaded] = useLocalStorage("acl-project-messages", {});
-  const [projectSessions, setProjectSessions] = useLocalStorage("acl-project-sessions", {});
+  // États persistés - UNE SEULE conversation globale
+  const [messages, setMessages, messagesLoaded] = useLocalStorage("acl-messages", []);
+  const [sessionId, setSessionId, sessionLoaded] = useLocalStorage("acl-session-id", null);
 
+  // États locaux
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("discussions");
   const [selectedProject, setSelectedProject] = useState(demoProjects[0]);
   const [isLoading, setIsLoading] = useState(false);
   const [apiStatus, setApiStatus] = useState(null);
   
+  // État local pour les messages (pour mise à jour immédiate)
   const [localMessages, setLocalMessages] = useState([]);
 
+  // Synchroniser localMessages avec messages au chargement
   useEffect(() => {
     if (messagesLoaded) {
-      setLocalMessages(projectMessages[selectedProject.id] || []);
+      setLocalMessages(messages);
     }
-  }, [selectedProject.id, messagesLoaded, projectMessages]);
+  }, [messagesLoaded, messages]);
 
+  // Ouvrir sidebar par défaut sur desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -44,6 +47,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Vérifier l'état de l'API
   useEffect(() => {
     const checkApiHealth = async () => {
       try {
@@ -57,22 +61,15 @@ export default function Home() {
     checkApiHealth();
   }, []);
 
+  // Sélectionner un projet (juste visuel, ne change pas la conversation)
   const handleSelectProject = (project) => {
-    if (localMessages.length > 0) {
-      setProjectMessages((prev) => ({
-        ...prev,
-        [selectedProject.id]: localMessages,
-      }));
-    }
-    
     setSelectedProject(project);
     setActiveTab("discussions");
   };
 
+  // Envoyer un message
   const handleSendMessage = async (content) => {
-    const projectId = selectedProject.id;
-    const currentSessionId = projectSessions[projectId] || null;
-
+    // Créer le message utilisateur
     const userMessage = {
       id: Date.now(),
       role: "user",
@@ -80,26 +77,22 @@ export default function Home() {
       timestamp: new Date().toISOString(),
     };
 
+    // Ajouter immédiatement à l'état local
     const updatedMessages = [...localMessages, userMessage];
     setLocalMessages(updatedMessages);
-
-    setProjectMessages((prev) => ({
-      ...prev,
-      [projectId]: updatedMessages,
-    }));
+    setMessages(updatedMessages);
 
     setIsLoading(true);
 
     try {
-      const response = await sendMessage(content, currentSessionId, "fr", "senegal");
+      const response = await sendMessage(content, sessionId, "fr", "senegal");
 
+      // Sauvegarder le session_id
       if (response.session_id) {
-        setProjectSessions((prev) => ({
-          ...prev,
-          [projectId]: response.session_id,
-        }));
+        setSessionId(response.session_id);
       }
 
+      // Créer la réponse du bot
       const botMessage = {
         id: Date.now() + 1,
         role: "assistant",
@@ -110,13 +103,10 @@ export default function Home() {
         timestamp: new Date().toISOString(),
       };
 
+      // Ajouter la réponse
       const messagesWithResponse = [...updatedMessages, botMessage];
       setLocalMessages(messagesWithResponse);
-
-      setProjectMessages((prev) => ({
-        ...prev,
-        [projectId]: messagesWithResponse,
-      }));
+      setMessages(messagesWithResponse);
 
     } catch (error) {
       const errorMessage = {
@@ -129,17 +119,14 @@ export default function Home() {
 
       const messagesWithError = [...updatedMessages, errorMessage];
       setLocalMessages(messagesWithError);
-
-      setProjectMessages((prev) => ({
-        ...prev,
-        [projectId]: messagesWithError,
-      }));
+      setMessages(messagesWithError);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!messagesLoaded) {
+  // Attendre le chargement
+  if (!messagesLoaded || !sessionLoaded) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center gap-3">
@@ -158,7 +145,6 @@ export default function Home() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         selectedProject={selectedProject}
-        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
@@ -181,11 +167,6 @@ export default function Home() {
           />
         )}
       </main>
-
-      <SettingsModal
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
     </div>
   );
 }

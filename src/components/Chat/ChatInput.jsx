@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function ChatInput({ onSendMessage, isLoading }) {
   const [inputValue, setInputValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const textareaRef = useRef(null);
+
+  // Auto-resize du textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "24px";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  }, [inputValue]);
 
   const handleSend = () => {
     if (!inputValue.trim() || isLoading) return;
@@ -13,55 +23,79 @@ export default function ChatInput({ onSendMessage, isLoading }) {
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 transition-colors">
+    <div className="pb-4 px-4 flex-shrink-0 transition-colors">
       <div className="max-w-3xl mx-auto">
         <div
-          className={`flex items-end gap-3 bg-gray-50 dark:bg-gray-700 rounded-2xl p-2 border-2 transition-all duration-300 ${
+          className={`flex items-end gap-2 bg-white dark:bg-gray-700 rounded-full p-2 border transition-all duration-300 ${
             isLoading
               ? "border-gray-200 dark:border-gray-600 opacity-75"
               : isFocused
-              ? "border-emerald-400 shadow-lg shadow-emerald-100 dark:shadow-emerald-900/30"
-              : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                ? "border-emerald-400 shadow-lg shadow-emerald-100 dark:shadow-emerald-900/30"
+                : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
           }`}
         >
-          <button
-            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 transition-all disabled:opacity-50"
-            disabled={isLoading}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-          </button>
-
           <textarea
+            ref={textareaRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder={isLoading ? "En attente..." : "Posez votre question..."}
+            placeholder={
+              isLoading ? "En attente..." : "Posez votre question..."
+            }
             rows={1}
             disabled={isLoading}
-            className="flex-1 bg-transparent resize-none outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 py-2 max-h-32 disabled:cursor-not-allowed"
+            className="flex-1 px-3 bg-transparent resize-none outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 py-2 leading-6 disabled:cursor-not-allowed"
+            style={{ minHeight: "24px", maxHeight: "120px" }}
           />
 
           <button
             onClick={handleSend}
             disabled={!inputValue.trim() || isLoading}
-            className={`p-3 rounded-xl transition-all duration-300 ${
+            className={`p-3 cursor-pointer rounded-full transition-all duration-200 flex-shrink-0 ${
               inputValue.trim() && !isLoading
-                ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-md hover:shadow-lg"
+                ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-md hover:shadow-lg active:scale-95"
                 : "bg-gray-200 dark:bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 12h14M12 5l7 7-7 7"
+                />
+              </svg>
+            )}
           </button>
         </div>
 
-        <p className={`text-xs text-center mt-2 ${isFocused ? "text-emerald-500" : "text-gray-400 dark:text-gray-500"}`}>
-          Veuillez utiliser la touche "Entrée" pour envoyer votre message.
+        <p
+          className={`hidden sm:block text-xs text-center mt-2 transition-colors ${isFocused ? "text-emerald-500" : "text-gray-400 dark:text-gray-500"}`}
+        >
+          <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-mono mr-1">
+            Entrée
+          </kbd>
+          pour envoyer
+          <span className="mx-2">•</span>
+          <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-mono mr-1">
+            Shift + Entrée
+          </kbd>
+          nouvelle ligne
         </p>
       </div>
     </div>

@@ -9,7 +9,6 @@ export default function Sidebar({
 }) {
   return (
     <>
-      {/* Overlay mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -17,7 +16,6 @@ export default function Sidebar({
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
@@ -27,7 +25,6 @@ export default function Sidebar({
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-0"}
         `}
       >
-        {/* Logo */}
         <div className="p-4 border-b border-emerald-500 dark:border-emerald-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
@@ -61,9 +58,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Boutons de navigation */}
         <div className="p-3 space-y-2">
-          {/* Bouton Discussions */}
           <button
             onClick={() => setActiveTab("discussions")}
             className={`w-full cursor-pointer flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
@@ -93,10 +88,9 @@ export default function Sidebar({
             </div>
           </button>
 
-          {/* Bouton Projets */}
           <button
             onClick={() => setActiveTab("projets")}
-            className={`w-full flex cursor-pointer items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+            className={`w-full cursor-pointer flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
               activeTab === "projets"
                 ? "bg-white text-emerald-600 shadow-lg"
                 : "bg-white/10 text-white hover:bg-white/20"
@@ -118,29 +112,25 @@ export default function Sidebar({
                   ? "text-emerald-500" 
                   : "text-emerald-200"
               }`}>
-                Choisir un service
+                Découvrez nos différentes plateformes
               </p>
             </div>
           </button>
         </div>
 
-        {/* Projet actuel */}
-        <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
-          <p className="text-xs font-medium text-emerald-200 uppercase tracking-wide mb-3 px-2">
-            Projet actuel
-          </p>
-          <div className="bg-white/10 rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                <span className="text-xl">{selectedProject.icon}</span>
-              </div>
-              <div>
-                <p className="font-medium text-white">{selectedProject.name}</p>
-                <p className="text-xs text-emerald-200 mt-1">
-                  {selectedProject.description || "Discussion en cours"}
-                </p>
-              </div>
+        <div className="flex-1"></div>
+
+        <div className="p-3">
+          <div className="bg-white/10 rounded-xl p-4 text-center">
+            <div className="w-12 h-12 mx-auto rounded-full bg-white/20 flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
+            <p className="text-white text-sm font-medium">Besoin d'aide ?</p>
+            <p className="text-emerald-200 text-xs mt-1">
+              Nous sommes ici pour vous aider sur AssistCitoyen
+            </p>
           </div>
         </div>
       </aside>

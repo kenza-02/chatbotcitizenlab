@@ -2,7 +2,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 
 export const metadata = {
-  title: "ChatBot",
+  title: "ChatBot - AfricTivistes CitizenLab",
   description: "Interface de chatbot",
 };
 

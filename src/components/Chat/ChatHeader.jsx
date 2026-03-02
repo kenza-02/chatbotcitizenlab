@@ -15,7 +15,7 @@ export default function ChatHeader({
       <div className="flex items-center gap-3">
         <button
           onClick={onToggleSidebar}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+          className="p-2 cursor-pointer rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -23,12 +23,12 @@ export default function ChatHeader({
         </button>
         <div>
           <h1 className="font-semibold text-gray-800 dark:text-white">
-            {activeTab === "discussions" ? selectedProject.name : "Projets"}
+            AfricTivistes CitizenLab
           </h1>
           <p className="text-xs text-gray-400 dark:text-gray-500">
             {activeTab === "discussions" 
               ? "Discussion en cours" 
-              : "Sélectionnez un projet"
+              : ""
             }
           </p>
         </div>
